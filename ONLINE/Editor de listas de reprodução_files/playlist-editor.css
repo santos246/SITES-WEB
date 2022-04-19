@@ -1,0 +1,89 @@
+.ui-state-highlight { 
+	height: 1.5em; 
+	line-height: 1.2em; 
+	border: 1px solid #eeeef9;
+	background: #eeeef9;
+	color: #363636;
+}
+input {
+	width: 320px;
+}
+
+.radio-custom {
+	margin-top: 0px;
+	margin-bottom: 9px;
+	margin-right: 15px;
+	float: left;
+	height: 40px;
+}
+
+.radio-custom input {
+	margin-right: 5px;
+	margin-top: 0px;
+}
+
+.input-group input {
+	margin: 0px !important;
+	height: 45px !important;
+}
+
+.input-group button {
+
+	 margin: 0px !important;
+}
+		
+.dl-horizontal dt {
+	width: 220px;
+	height: 40px;
+	padding-right: 20px;
+	float: left;
+}
+
+.btn {
+	border-bottom-left-radius: 5px; 
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+}
+
+.btn-danger {
+	background: #aa0000 !important;
+}
+.btn-primary {
+	background: #0000aa !important;
+}
+
+.btn-left {
+	border-bottom-left-radius: 5px; 
+	border-top-left-radius: 5px;
+	border-top-right-radius: 0px;
+	border-bottom-right-radius: 0px;
+}
+
+.btn-right {
+	border-bottom-left-radius: 0px; 
+	border-top-left-radius: 0px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+}
+
+.btn-inner {
+	border-bottom-left-radius: 0px; 
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+	border-bottom-right-radius: 0px;
+}
+
+
+.page-header {
+	display: none;
+}
+
+.dropdown button {
+	background: #dddddd !important;
+}
+
+input::-webkit-input-placeholder {color:#999999;}
+input::-moz-placeholder          {color:#999999;}/* Firefox 19+ */
+input:-moz-placeholder           {color:#999999;}/* Firefox 18- */
+input:-ms-input-placeholder      {color:#999999;}
