@@ -1,0 +1,865 @@
+var headTag1 = jQuery("<link />", {rel: "stylesheet"});
+var headTag2 = jQuery("<link />", {rel: "stylesheet"});
+var headTag3 = jQuery("<link />", {rel: "stylesheet"});
+headTag1.attr('href', '/services/playlist-editor/colorpicker/dist/css/bootstrap-colorpicker.min.css');
+headTag2.attr('href', '/services/playlist-editor/playlist-editor.css');
+headTag3.attr('href', '/services/playlist-editor/bootstrap/css/bootstrap.min.css');
+jQuery('head').append(headTag1);
+jQuery('head').append(headTag2);
+//jQuery('head').append(headTag3);
+var content = [];
+var maxFileSize = 1900000;
+var indexes = [];
+var contentType = "content://streams";
+var currentDeviceName = "";
+var selectedItemIndex = 0;
+var autoCompleteMap = [];
+var currentLanguage = location.href.split('//')[1].split('/')[1].toLowerCase();
+var translations = (languages[currentLanguage] != undefined) ? languages[currentLanguage] : languages['en'];
+var defaultTileBackgroundColor = 'rgb(52, 73, 94)';
+var googleAdsenseCode = '<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><!-- SS IPTV Playlist Editor Head --><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-7556039235344920" data-ad-slot="9888255090" data-ad-format="auto"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>';
+var yandexDirectCode = '<!-- Yandex.RTB R-A-265386-1 --><div id="yandex_rtb_R-A-265386-1"></div><script type="text/javascript">    (function(w, d, n, s, t) {        w[n] = w[n] || [];        w[n].push(function() {            Ya.Context.AdvManager.render({                blockId: "R-A-265386-1",                renderTo: "yandex_rtb_R-A-265386-1",                async: true            });        });        t = d.getElementsByTagName("script")[0];       s = d.createElement("script");        s.type = "text/javascript";        s.src = "//an.yandex.ru/system/context.js";        s.async = true;        t.parentNode.insertBefore(s, t);    })(this, this.document,"yandexContextAsyncCallbacks");</script>';
+
+var exoclickCode = '<script type="text/javascript">var ad_idzone = "2926914",	 ad_width = "728",	 ad_height = "90";</script><script type="text/javascript" src="https://ads.exdynsrv.com/ads.js"></script><noscript><a href="https://main.exdynsrv.com/img-click.php?idzone=2926914" target="_blank"><img src="https://syndication.exdynsrv.com/ads-iframe-display.php?idzone=2926914&output=img&type=728x90" width="728" height="90"></a></noscript>';
+      
+var translationsMap = [
+	{id: "tableHeadTitle", type: "text", value: translations.TABLE_HEAD_TITLE}, 
+	{id: "tableHeadSource", type: "text", value: translations.TABLE_HEAD_SOURCE},
+	{id: "tableHeadEdit", type: "text", value: translations.TABLE_HEAD_EDIT},
+	{id: "tableHeadDelete", type: "text", value: translations.TABLE_HEAD_DELETE},
+	{id: "btnSave", type: "text", value: translations.BTN_SAVE},
+	{id: "btnOpen", type: "text", value: translations.BTN_OPEN},
+	{id: "btnDisconnectDevice", type: "text", value: translations.BTN_DISCONNECT_DEVICE},
+	{id: "btnAddDevice", type: "text", value: translations.BTN_ADD_DEVICE},
+	{id: "inptConnectionCodeInput", type: "placeholder", value: translations.INPUT_CONNECTION_CODE},
+	{id: "streamsTab", type: "text", value: translations.STREAMS_TAB},
+	{id: "videosTab", type: "text", value: translations.VIDEOS_TAB},
+	{id: "favoritesTab", type: "text", value: translations.FAVORITES_TAB},
+	{id: "broadcastTab", type: "text", value: translations.BROADCAST_TAB},
+	{id: "playlistsTab", type: "text", value: translations.PLAYLISTS_TAB},
+	{id: "modalLabel", type: "text", value: translations.MODAL_LABEL},
+	{id: "displayedNameLabel", type: "text", value: translations.DISPLAYED_NAME_LABEL},
+	{id: "standardizedNameLabel", type: "text", value: translations.STANDARDIZED_NAME_LABEL},
+	{id: "descriptionLabel", type: "text", value: translations.DESCRIPTION_LABEL},
+	{id: "sourceLabel", type: "text", value: translations.SOURCE_LABEL},
+	{id: "sizeLabel", type: "text", value: translations.SIZE_LABEL},
+	{id: "tileBackgroundLabel", type: "text", value: translations.TILE_BACKGROUND_LABEL},
+	{id: "logoLabel", type: "text", value: translations.LOGO_LABEL},
+	{id: "ratioLabel", type: "text", value: translations.RATIO_LABEL},
+	{id: "audioTrackLabel", type: "text", value: translations.AUDIO_TRACK_LABEL},
+	{id: "epgTimeShiftingLabel", type: "text", value: translations.EPG_TIME_SHIFTING_LABEL},
+	{id: "btnModalCancel", type: "text", value: translations.BTN_MODAL_CANCEL},
+	{id: "btnBackgroundTypeButton", type: "text", value: translations.BTN_BACKGROUND_TYPE_BUTTON},
+	{id: "imageLabel", type: "text", value: translations.IMAGE_LABEL},
+	{id: "colorLabel", type: "text", value: translations.COLOR_LABEL},
+	{id: "labelSizeSmall", type: "html", value: translations.LABEL_SIZE_SMALL},
+	{id: "labelSizeMedium", type: "html", value: translations.LABEL_SIZE_MEDIUM},
+	{id: "labelSizeBig", type: "html", value: translations.LABEL_SIZE_BIG},
+	{id: "inputStreamTitle", type: "placeholder", value: translations.INPUT_STREAM_TITLE},
+	{id: "inputStandardizedName", type: "placeholder", value: translations.INPUT_STANDARDIZED_NAME},
+	{id: "inputDescription", type: "placeholder", value: translations.INPUT_DESCRIPTION},
+	{id: "inputStreamURL", type: "placeholder", value: translations.INPUT_STRAM_URL},
+	{id: "inputBackground", type: "placeholder", value: translations.INPUT_BACKGROUND_IMAGE},
+	{id: "inputLogoURL", type: "placeholder", value: translations.INPUT_LOGO_URL},
+	{id: "inputAudio", type: "placeholder", value: translations.INPUT_AUDIO},
+	{id: "inputShift", type: "placeholder", value: translations.INPUT_SHIFT},
+	{id: "btnAddPlaylistItem", type: "text", value: translations.BTN_ADD_ITEM},
+	{id: "btnDownload", type: "text", value: translations.BTN_DOWNLOAD},
+	{id: "btnClear", type: "text", value: translations.BTN_CLEAR},
+	{id: "btnRenameDevice", type: "text", value: translations.BTN_RENAME_DEVICE},
+	{id: "btnRenameDeviceModalCancel", type: "text", value: translations.BTN_MODAL_CANCEL},
+	{id: "deviceNameLabel", type: "text", value: translations.DEVICE_NAME_LABEL},
+	{id: "epgCountryCodeLabel", type: "text", value: translations.EPG_COUNTRY_CODE_LABEL},
+	{id: "inputEPGCounty", type: "placeholder", value: translations.INPUT_EPG_COUNTRY_CODE},
+	{id: "subtitlesTrackLabel", type: "text", value: translations.SUBTITLES_LABEL},
+	{id: "inputSubtitles", type: "placeholder", value: translations.INPUT_SUBTITLES},
+	{id: "catchupLabel", type: "text", value: translations.CATCHUP_LABEL},
+	{id: "catchupDaysLabel", type: "text", value: translations.CATCHUP_DAYS_LABEL},
+	{id: "groupLabel", type: "text", value: translations.GROUP_LABEL},
+	{id: "inputGroup", type: "placeholder", value: translations.INPUT_GROUP}
+	];
+	
+function setAd() {
+	jQuery("#dynamicBanner").html(googleAdsenseCode);
+}
+
+function setYandexAd() {
+	jQuery("#dynamicBanner").html('');
+}
+
+function setExoclickAd() {
+	jQuery("#dynamicBanner").html(exoclickCode);
+}
+
+function clearAd() {
+	jQuery("#dynamicBanner").html('');
+}
+	
+function setTranslation() {
+	for (var i = 0; i < translationsMap.length; i++) {
+		var elementId = "#"+translationsMap[i].id;
+		switch (translationsMap[i].type) {
+			case "text":
+				jQuery(elementId).text(translationsMap[i].value);
+				break;
+			case "placeholder":
+				jQuery(elementId).attr("placeholder", translationsMap[i].value);
+				break;
+			case "val":
+				jQuery(elementId).val(translationsMap[i].value);
+				break;              
+			case "html":
+				jQuery(elementId).html(translationsMap[i].value);
+				break;  
+		}    
+	}      
+}
+	
+function checkBrowser() {
+	var ua = window.navigator.userAgent;
+	var msie = ua.indexOf("MSIE ");
+	if (msie > 0) jQuery("#listRenderer").css('cursor', 'default');
+	else jQuery("#listRenderer").css('cursor', 'move');
+	return false;
+}
+
+function returnItemById(id) {
+	return {item: content[id], arrayIndex: id};
+}
+
+var fixHelper = function(e, ui) {
+		ui.children().each(function() {
+		jQuery(this).width(jQuery(this).width());
+	});
+	return ui;
+};
+
+var delteButtonClick = function() {
+	row = jQuery(this).parent().parent();
+	indexes[row.attr("index")] = -1;
+	row.remove();
+	refreshIndexes();
+}
+
+var refreshIndexes = function() {
+	jQuery("#listRenderer").children().each(function (index) {jQuery(this).children(":first-child").text(index + 1);});
+}
+
+function removeColorPicker() {
+	var inputBackground = jQuery("#inputBackground");
+	try {
+		inputBackground.colorpicker('destroy');
+	}
+	catch (error) {};
+
+	inputBackground.css("background", "#ffffff");
+	inputBackground.val("");
+	inputBackground.attr("placeholder", translations.INPUT_BACKGROUND_IMAGE);
+	jQuery("#btnBackgroundTypeButton").html(translations.IMAGE_LABEL + ' <span class="caret"></span>');
+}
+
+function readExtParams(content) {
+	var extParams = {};
+	try {
+		extParams = content.get_ext();
+	} 
+	catch(error) { console.log('error while reading ExtParams'); };
+	if (extParams == null) extParams = {};
+	return (extParams);
+}
+
+function getUrlParams (url) {
+
+	var urlParams = {}
+	var queryString = url.split('#')[1]
+	
+	if (queryString) {
+		var keyValuePairs = queryString.split('&')
+		for (var i = 0; i < keyValuePairs.length; i++) {
+			var keyValuePair = keyValuePairs[i].split('=')
+			var paramName = keyValuePair[0]
+			var paramValue = keyValuePair[1] || ''
+			urlParams[paramName] = decodeURIComponent(paramValue.replace(/\+/g, ' '))
+		}
+	}
+	return urlParams
+}  
+	
+// Заполнение модельной формы
+function modalFormUpdate() {
+	var formData = jQuery(this).children("div").children("#formData");
+	var inputStreamURL = formData.children().children("#inputStreamURL");
+	var inputStreamTitle = formData.children().children("#inputStreamTitle");
+	var inputShift = formData.children().children("#inputShift");
+	var inputAudio = formData.children().children("#inputAudio");
+	var inputSubtitles = formData.children().children("#inputSubtitles");
+	var inputEPGCounty = formData.children().children("#inputEPGCounty");
+	var inputLogoURL = formData.children().children("#inputLogoURL");
+	var radioAspectRatioGroup = jQuery("input[name=optionsRatio]:radio");
+	var radioSize = jQuery("input[name=optionsSize]:radio");
+	var inputStandardizedName = jQuery("#inputStandardizedName");
+	var inputBackground = jQuery("#inputBackground");
+	var inputDescription = jQuery("#inputDescription");
+	var inputGroup = jQuery("#inputGroup");
+	var extParams = {}
+	var logoURL = content[selectedItemIndex].logo;
+	var sourceURL = content[selectedItemIndex].source;
+	extParams = readExtParams(content[selectedItemIndex]);
+	var tileSize = extParams.size;
+	
+	// Обнуление colorpicker'а
+	removeColorPicker();
+	
+	if (extParams.background != undefined) {
+		if ((extParams.background.charAt(0) == "#") || (extParams.background.substring(0, 3) == "rgb")) {
+			inputBackground.colorpicker({color: extParams.background});
+			inputBackground.css("background", extParams.background);
+			inputBackground.val(extParams.background);
+			inputBackground.colorpicker().on('changeColor.colorpicker', function(event) {jQuery(this).css("background", event.color.toHex());});
+			jQuery("#btnBackgroundTypeButton").html(translations.COLOR_LABEL + ' <span class="caret"></span>');
+		} else {
+			inputBackground.val(extParams.background);
+		}
+	} else inputBackground.val("");
+
+	radioSize.prop("checked", false);
+	if (tileSize != undefined) {
+		radioSize.each(function () {if (tileSize.toLowerCase() == jQuery(this).val().toLowerCase()) jQuery(this).prop("checked", true);});
+	}
+
+	radioAspectRatioGroup.prop("checked", false);
+	radioAspectRatioGroup.each(function () {if (content[selectedItemIndex].aspectRatio == jQuery(this).val()) jQuery(this).prop("checked", true);});
+	
+	inputStreamTitle.val(content[selectedItemIndex].title);
+	//inputDescription.val(content[selectedItemIndex].description);
+	inputStandardizedName.attr("name", content[selectedItemIndex].channelId);
+	ssiptv.site.getChannelTitle(content[selectedItemIndex].channelId, function(event) {inputStandardizedName.val(event.title);});
+	inputStreamURL.val(sourceURL);
+	inputGroup.val(content[selectedItemIndex].group);
+	inputShift.val(content[selectedItemIndex].shift);
+	inputAudio.val(content[selectedItemIndex].audioTrack);
+	inputEPGCounty.val(extParams.country);
+	inputSubtitles.val(extParams.subtitles); //Заменить на subtitles
+	inputLogoURL.val(logoURL);
+	if (contentType == "content://playlists") {
+		var selectCatchup = jQuery("#selectCatchup");
+		var inputCatchupDays = jQuery("#inputCatchupDays");
+		var catchup = (ssiptv.site.getSourceParams != null) ? ssiptv.site.getSourceParams(sourceURL).catchup : null;
+		var catchupDays = (ssiptv.site.getSourceParams != null) ? parseInt(ssiptv.site.getSourceParams(sourceURL)["catchup-days"], 10) : null;
+		if (isNaN(catchupDays)) catchupDays = 0;
+		var catchupTypes = ["default", "flussonic", "shift"];
+		selectCatchup.val((catchup != null && catchupTypes.indexOf(catchup.toLowerCase()) >= 0) ? catchup : "none");
+		inputCatchupDays.val((catchupDays != null) ? catchupDays : 0);
+	}
+}
+	
+// Сохранение данных из модальной формы
+function btnApplyChangesHandler() {
+	var formData = jQuery("#formData");
+	var inputStreamURL = formData.children().children("#inputStreamURL");
+	var inputStreamTitle = formData.children().children("#inputStreamTitle");
+	var inputShift = formData.children().children("#inputShift");
+	var inputAudio = formData.children().children("#inputAudio");
+	var inputSubtitles = formData.children().children("#inputSubtitles");
+	var inputEPGCounty = formData.children().children("#inputEPGCounty");
+	var inputLogoURL = formData.children().children("#inputLogoURL");
+	var radioAspectRatioGroup = jQuery("input[name=optionsRatio]:radio");
+	var radioSize = jQuery("input[name=optionsSize]:radio");
+	var inputStandardizedName = jQuery("#inputStandardizedName");
+	var inputBackground = jQuery("#inputBackground");
+	var inputGroup = jQuery("#inputGroup");
+	var extParams = {};
+	if (contentType == "content://playlists") {
+		var selectCatchup = jQuery("#selectCatchup");
+		var inputCatchupDays = jQuery("#inputCatchupDays");
+		var catchup = (selectCatchup.val() == "none") ? "" : selectCatchup.val();
+		var catchupDays = (inputCatchupDays.val() <= 0) ? "" : inputCatchupDays.val();
+		inputStreamURL.val(ssiptv.site.setSourceParams(inputStreamURL.val(), {"catchup" : catchup, "catchup-days" : catchupDays}));
+		
+	}
+	
+	
+	extParams = readExtParams(content[selectedItemIndex]);
+	extParams.background = inputBackground.val();
+	if (inputSubtitles.css('display') != 'none') extParams.subtitles = inputSubtitles.val(); //Заменить на subtitles
+	if (inputEPGCounty.css('display') != 'none') extParams.country = inputEPGCounty.val();
+	radioSize.each(function () {if (jQuery(this).prop("checked")) extParams.size = jQuery(this).val();});
+	
+	if (content[selectedItemIndex].updateExt) content[selectedItemIndex].updateExt(extParams); else content[selectedItemIndex].ext = ssiptv.site.getEncodeJSON(extParams);
+	
+	radioAspectRatioGroup.each(function () {if (jQuery(this).prop("checked")) content[selectedItemIndex].aspectRatio = jQuery(this).val();})
+	
+	content[selectedItemIndex].title = inputStreamTitle.val();
+	if (inputStreamURL.css('display') != 'none') content[selectedItemIndex].source = inputStreamURL.val();
+	if (inputGroup.css('display') != 'none') content[selectedItemIndex].group = inputGroup.val();
+	if (inputShift.css('display') != 'none') content[selectedItemIndex].shift = isNaN(parseInt(inputShift.val(), 10)) ? 0 : parseInt(inputShift.val(), 10);
+	if (inputAudio.css('display') != 'none') content[selectedItemIndex].audioTrack = inputAudio.val();
+	if (inputStandardizedName.css('display') != 'none') content[selectedItemIndex].channelId = inputStandardizedName.attr("name");
+	content[selectedItemIndex].logo = inputLogoURL.val();
+	
+	//Перерисовка данных в таблице
+	jQuery("#listRenderer").children().each(function (index) {
+		if (selectedItemIndex == jQuery(this).attr("index")) {
+			if ((extParams.background !='') && ((extParams.background.charAt(0) == "#") || (extParams.background.substring(0, 3) == "rgb"))) {
+				jQuery(this).children("#logoCell").css("background", extParams.background);
+			} else jQuery(this).children("#logoCell").css("background", defaultTileBackgroundColor);
+			jQuery(this).children("#sourceCell").text(content[selectedItemIndex].source);
+			jQuery(this).children("#titleCell").text(content[selectedItemIndex].title);
+			var logo = jQuery(this).children().children("img");
+			logo.css("visibility", "");
+			logo.attr("src", ssiptv.site.getContentImageSource(content[selectedItemIndex]));
+			logo.on("error", function (e) { logo.css("visibility", "hidden"); });
+		}
+	});
+	jQuery("#editModal").modal("hide");			
+}
+
+// Переименование устройства
+function btnRenameDeviceApplyChangesHandler() {
+	currentDeviceName = jQuery("#deviceNameInput").val();
+	ssiptv.bridge.getCurrent(function (e) {
+		ssiptv.bridge.setDeviceName(e.id, currentDeviceName, function(e) {ssiptv.bridge.getDevices(getDevicesHandler);});
+	});
+	jQuery("#renameDeviceModal").modal("hide");	
+}
+
+var backgroundTypeSelection = function() {
+	jQuery(this).parent().parent().prev().html(jQuery(this).html() + ' ' + '<span class="caret"></span>');
+	var inputBackground = jQuery("input#inputBackground");
+	if (jQuery(this).attr("href") == '#color') {
+		inputBackground.colorpicker();
+		inputBackground.attr("placeholder", translations.INPUT_BACKGROUND_COLOR);
+		inputBackground.colorpicker().on('changeColor.colorpicker', function(event) {jQuery(this).css("background", event.color.toHex());})
+	}
+	if (jQuery(this).attr("href") == '#image') {
+		removeColorPicker();
+	}
+
+}
+
+function downloadPlaylist() {
+	ssiptv.bridge.getCurrent(function (e) {
+		ssiptv.site.getDownloadContent(e.id, contentType, function(event) {} );
+	});
+}
+	
+function lstDeviceSelectListHandler() {
+	jQuery(this).parent().parent().prev().html(jQuery(this).html() + ' ' + '<span class="caret"></span>');
+	ssiptv.bridge.setCurrent(jQuery(this).attr("id"), function (e) {ssiptv.bridge.getDevices(getDevicesHandler);});
+}
+	
+function getContentHandler(value) {
+	jQuery.blockUI({message: translations.MESSAGE_PLEASE_WAIT});
+	ssiptv.bridge.getLoadContent(value.data, -1, getRecognizedDataHandler);
+	if (value.data.length > maxFileSize) showMessage(translations.MESSAGE_TOO_LARGE_FILE_UPLOADED, 'block');
+}
+	
+// Сохранение данных
+function saveContent() {
+	var savedContent = [];
+	var listRendererRows = jQuery("#listRenderer tr");
+	var currentIndex;
+
+	listRendererRows.each(function () {
+		currentIndex = jQuery(this).attr("index");
+		if (content[currentIndex] != undefined) {
+			if (contentType == "content://videos") {
+				if (content[currentIndex].type != 15) content[currentIndex].type = 4; 
+				content[currentIndex].channelId = -1;
+			}
+			if ((contentType == "content://streams" || contentType == "content://favorites") && (content[currentIndex].type != 15)) content[currentIndex].type = 1;
+			savedContent.push(content[currentIndex]);
+		}
+	});
+	jQuery.blockUI({message: translations.MESSAGE_PLEASE_WAIT});
+	ssiptv.bridge.getCurrent(function (e) {
+		ssiptv.bridge.setContent(e.id, contentType, savedContent, function (event) {jQuery.unblockUI(); showMessage(translations.MESSAGE_PLAYLIST_SAVED, 'success'); });
+	});
+}
+	
+// Добавление нового элемента
+function addItem() {
+	content.push(ssiptv.site.getCreateContentVO(contentType));
+	var lastIndex = content.length - 1;
+	content[lastIndex].title = 'Item ' + (lastIndex + 1);
+	addRowToTable(content[lastIndex], lastIndex);
+	selectedItemIndex = lastIndex;
+	jQuery("#editModal").modal("show");			
+}
+	
+function btnDisconnectHandler() {
+	ssiptv.bridge.getCurrent(function (e) {ssiptv.bridge.getDisconnect(e.id); ssiptv.bridge.getDevices(getDevicesHandler);});
+}
+
+function getRecognizedDataHandler(value) {
+	updateTable(value.list);
+	if (value.list.length > 0) { 
+		showMessage(translations.MESSAGE_PRESS_SAVE_BUTTON, 'info');
+	} 
+	else {
+		showMessage(translations.MESSAGE_NO_ITEMS_FOUND, 'block');
+	}
+		
+}
+	
+function getDevicesHandler(value) {
+	if (value.list.length > 0) {
+		//setAd();
+		jQuery("#deviceSelectionGroup").css("visibility", "visible");
+		jQuery("#tab-buttonsContainer").css("display", "block")
+		jQuery("#playlistTable").css("visibility", "visible")
+		var deviceName = (value.list[0].name != null && value.list[0].name != "") ? value.list[0].name : value.list[0].group + ' ' + value.list[0].model;
+		jQuery("#btnDeviceSelectButton").html(deviceName + ' ' + '<span class="caret"></span>');
+		jQuery("#lstDeviceSelectList").html("");
+		for (var i = 0; i < value.list.length; i++) {
+			//Проверка текущего устройства и вывод правильного имени на комбобоксе
+			deviceName = (value.list[i].name != null && value.list[i].name != "") ? value.list[i].name : value.list[i].group + ' ' + value.list[i].model;
+			ssiptv.bridge.getCurrent(function(e) {
+				if (value.list[i].id == e.id) {
+					currentDeviceName = deviceName;
+					jQuery("#btnDeviceSelectButton").html(deviceName + ' ' + '<span class="caret"></span>');
+					jQuery.blockUI({message: translations.MESSAGE_PLEASE_WAIT});
+					ssiptv.bridge.getContent(e.id, [contentType], function (e) {if (e.list.length > 0) updateTable(e.list[0].list);});
+				};
+			});
+			var deviceSelectListItem = jQuery("<li />");
+			var a = jQuery("<a />", {id: value.list[i].id});
+			a.text(deviceName + ' ');
+			a.on("click", lstDeviceSelectListHandler);
+			deviceSelectListItem.append(a);
+			jQuery("#lstDeviceSelectList").append(deviceSelectListItem);
+		}
+	} else {
+		clearAd();
+		jQuery("#deviceSelectionGroup").css("visibility", "hidden");
+		jQuery("#tab-buttonsContainer").css("display", "none");
+		jQuery("#playlistTable").css("visibility", "hidden");
+		showMessage(translations.MESSAGE_NO_DEICES_CONNECTED, 'block');
+	}
+}
+
+function showMessage(messageText, type) {
+	jQuery("#messageContainer").html("");
+	var message = jQuery("<div />");
+	var closeButton = jQuery("<button />");
+	closeButton.addClass("close");
+	closeButton.attr("data-dismiss", "alert");
+	closeButton.attr("type", "button");
+	closeButton.text("×");
+	
+	switch (type) {
+		case 'success':
+			message.addClass("alert alert-success");
+			break;
+		case 'info':
+			message.addClass("alert alert-info");
+			break;
+		case 'error':
+			message.addClass("alert alert-error");
+			break;
+		default:
+			message.addClass("alert alert-block");
+			break;
+	}
+
+	message.text(messageText);
+	message.append(closeButton);
+	jQuery("#messageContainer").append(message);
+}
+
+function getAccessHandler(value) {
+	jQuery("#inptConnectionCodeInput").val("");
+	jQuery("#messageContainer").html("");
+	var message = jQuery("<div />");
+	var closeButton = jQuery("<button />");
+	closeButton.addClass("close");
+	closeButton.attr("data-dismiss", "alert");
+	closeButton.attr("type", "button");
+	closeButton.text("×");
+	
+	if (value.present) {
+		message.addClass("alert alert-block");
+		message.text(translations.MESSAGE_DEVICE_IS_ALREADY_CONNECTED);
+		message.append(closeButton);
+		jQuery("#messageContainer").append(message);
+	} else {
+		if (value.deviceId > 0) {
+			ssiptv.bridge.getDevices(getDevicesHandler);
+			message.addClass("alert alert-success");
+			message.text(translations.MESSAGE_DEVICE_CONNECTION_SECCESSFUL);
+			message.append(closeButton);
+			jQuery("#messageContainer").append(message);
+		} else {
+			message.addClass("alert alert-error");
+			message.text(translations.MESSAGE_WRONG_CODE);
+			message.append(closeButton);
+			jQuery("#messageContainer").append(message);
+		}
+	}
+}
+
+function __get_description(h)
+{
+	var c = translations;
+	if (c[h + "_TITLE"] != null && c[h + "_DESCRIPTION"] != null) {
+		return ([c[h + "_TITLE"], c[h + "_DESCRIPTION"], c[h + "_FIX"]]);
+	}
+	else {
+		c = languages["en"];
+		if (c[h + "_TITLE"] != null && c[h + "_DESCRIPTION"] != null) {
+			return ([c[h + "_TITLE"], c[h + "_DESCRIPTION"], c[h + "_FIX"]]);
+		}
+	}
+	return ([]);
+}
+
+function __source_check(source)
+{
+	var fail = false;
+	//try { _trackEvent("[CHECK]", "URL: " + source, "", 1); } catch (e) { };
+	try {
+		jQuery.blockUI({message: translations.MESSAGE_PLEASE_WAIT});
+		ssiptv.bridge.getURLInfo(source, function(e) {
+			jQuery.unblockUI();
+			
+			
+			var d = [ 	"URL_INFO_OK" 				/* 0x00 */, 
+						"URL_INFO_EMPTY_SOURCE" 	/* 0x01 */,
+						"URL_INFO_WORNG_PROTOCOL" 	/* 0x02 */,
+						"URL_INFO_WRONG_LOCATION"	/* 0x03 */,
+						"URL_INFO_NO_CORS_HEADER" 	/* 0x04 */,
+						"URL_INFO_NOT_VALID_CORS" 	/* 0x05 */,
+						"URL_INFO_TOO_MANY_CORS" 	/* 0x06 */,
+						"URL_INFO_MAX_REDIRECTS"	/* 0x07 */,
+						"URL_INFO_NOT_FOUND"		/* 0x08 */,
+						"URL_INFO_GATEWAY_TIMEOUT" 	/* 0x09 */,
+						"URL_INFO_SERVER_ERROR" 	/* 0x0a */,
+						"URL_INFO_UNAUTHORIZED"		/* 0x0b */,
+						"URL_INFO_FORBIDDEN" 		/* 0x0c */,
+						"URL_INFO_ACCESS_ERROR" 	/* 0x0d */,
+						"URL_INFO_NO_CONNECTION" 	/* 0x0e */
+					];
+
+			var cnt = __get_description(d[e.error]);
+			if (cnt.length == 3) {
+				jQuery("#verificationModal").modal("show");
+				jQuery("#verificationModalContent").html(
+						"<h3>"+cnt[0]+"</h3>\n<br/>"+
+						cnt[1].replace("\n", "\n<br/>") + "<br/><br/>"+
+						((cnt[2] != null) ? cnt[2].replace("\n", "\n<br/>") : ""));
+				
+			}
+		});
+	} catch (e) { fail = true; };
+	if (fail) {
+		jQuery.unblockUI();
+	}
+}
+	
+function addRowToTable(listItem, i) {
+	var extParams = {};
+	var row = jQuery("<tr />");
+	var orderCell = jQuery("<td />");
+	var logoCell = jQuery("<td />", {"id": "logoCell"});
+	var logoImage = jQuery("<img />");
+	var sourceCell = jQuery("<td />");
+	var titleCell = jQuery("<td />");
+	var editButtonCell = jQuery("<td />");
+	var editButton = jQuery("<button />");
+	var editIcon = jQuery("<i />");
+	var deleteButtonCell = jQuery("<td />");
+	var deleteButton = jQuery("<button />");
+	var deleteIcon = jQuery("<i />");
+	var tileBackgroundColor = defaultTileBackgroundColor;
+	extParams = readExtParams(listItem);
+	if (extParams.background != undefined) {
+		if ((extParams.background.charAt(0) == "#") || (extParams.background.substring(0, 3) == "rgb")) {
+			tileBackgroundColor = extParams.background;
+		}
+	}
+	logoImage.attr("src", ssiptv.site.getContentImageSource(listItem));
+	logoImage.on("error", function (e) { jQuery(this).css("visibility", "hidden"); });
+			
+	logoCell.append(logoImage);
+	logoCell.css("background", tileBackgroundColor);
+	deleteIcon.addClass("icon-trash icon-white");
+	deleteButton.addClass("btn btn-danger");
+	deleteButton.attr("title", "Delete Item");
+	deleteButton.append(deleteIcon);
+	deleteButton.on("click", delteButtonClick);
+	deleteButtonCell.append(deleteButton);
+	editIcon.addClass("icon-pencil icon-white");
+	editButton.addClass("btn");
+	editButton.attr("title", "Edit Item");
+	editButton.attr("data-toggle", "modal");
+	editButton.attr("data-target", "#editModal");
+	editButton.append(editIcon);
+	editButton.on("click", function() {selectedItemIndex = jQuery(this).parent().parent().attr("index");});
+	editButtonCell.append(editButton);
+	titleCell.text(listItem.title);
+	titleCell.attr("id", "titleCell");
+	orderCell.text(jQuery("#listRenderer tr").length + 1);
+	sourceCell.text(listItem.source);
+	if (listItem.type == 15) {
+		sourceCell.html("<a href=\"#\" onclick='__source_check(\""+listItem.source+"\");' >" + translations.EXTERNAL_PLAYLIST_CHECK+ "</a> &nbsp; " + sourceCell.html());
+	}
+	sourceCell.attr("id", "sourceCell");
+	row.css("background", "#ffffff");
+	row.append([orderCell, logoCell, titleCell, sourceCell, editButtonCell, deleteButtonCell]);
+	row.attr("index", i);
+	jQuery("#listRenderer").append(row);
+	
+}
+      
+function updateTable(list) {
+	//jQuery("#preloaderModal").modal('hide');
+	content = list;
+	indexes = [];
+	jQuery("#listRenderer").html("");
+	for (var i=0; i < content.length; i++) {
+		indexes.push(i);
+		addRowToTable(content[i], i);
+	}
+	jQuery.unblockUI();
+	if (list.length > 0) setAd(); else {clearAd();}
+}
+     
+jQuery(document).ready(function() {
+	checkBrowser();  
+	setTranslation();
+	
+
+	//Заполнение списка
+	ssiptv.site.getCreateUploadButton(jQuery("#btnOpen").get(0), [["M3U Playlist", "*.m3u"], ["XSPF Playlist", "*.xspf"]], getContentHandler);
+	ssiptv.bridge.getDevices(getDevicesHandler);
+	
+	jQuery("#listRenderer").sortable({helper: fixHelper, update: function( event, ui ) {}, placeholder: "ui-state-highlight", start: function(e, ui){ui.placeholder.height(ui.item.height());}});
+	jQuery("#listRenderer").disableSelection();
+	jQuery("#listRenderer" ).on( "sortupdate", function( event, ui ) {refreshIndexes();});
+	//Заполнение модальной формы
+	jQuery("#editModal").on("show", modalFormUpdate);
+	
+	//Заполнение модальной формы переименования
+	jQuery("#renameDeviceModal").on("show", function () {jQuery("#deviceNameInput").val(currentDeviceName);});
+	
+	//Выбор типа фона
+	jQuery("#backgroundTypeMenu a").on("click", backgroundTypeSelection);
+	
+	//Добавление устройства
+	jQuery("#btnAddDevice").on("click", function() {ssiptv.bridge.getAccess(jQuery("#inptConnectionCodeInput").val(), getAccessHandler);});
+	
+	//Удаление устройства
+	jQuery("#btnDisconnectDevice").on("click", btnDisconnectHandler);
+	
+	//Переименование устройства
+	jQuery("#btnRenameDeviceApplyChanges").on("click", btnRenameDeviceApplyChangesHandler);
+		
+	//Сохранение плейлиста
+	jQuery("#btnSave").on("click", saveContent);
+	
+	//Добавление элемента
+	jQuery("#btnAddPlaylistItem").on("click", addItem);
+	
+	//Очистка плейлиста
+	jQuery("#btnClear").on("click", function (e) {content = []; updateTable(content); showMessage(translations.MESSAGE_CLEAR, 'block');});
+	
+	//Выгрузка плейлиста
+	jQuery("#btnDownload").on("click", downloadPlaylist);
+		
+	//Применение изменений в модальной форме
+	jQuery("#btnApplyChanges").on("click", btnApplyChangesHandler);
+	
+	//Добавление автокомплита
+	jQuery("#inputStandardizedName").typeahead({
+		source: function(query, process) {
+		ssiptv.site.getOfferChannels(query, 10, function (event) {
+			var response = [];
+			jQuery.each(event.list, function (i, item) {autoCompleteMap[item.title] = item; response.push(item.title);});
+			process(response);});
+		},
+		minLength: 2,
+		items: 10,
+		updater: function(item) {
+			jQuery("#inputStandardizedName").attr("name", autoCompleteMap[item].id);
+			return(item);
+		},
+		sorter: function (items) {
+			return items.sort();
+		}
+	});
+	
+	// Переход фокуса от автокомплит
+	jQuery("#inputStandardizedName").on("blur", function() {
+		if (jQuery(this).val() == "") jQuery(this).attr("name", "-1");
+		if (autoCompleteMap[jQuery(this).val()] != undefined) {
+			if (jQuery(this).attr("name") != autoCompleteMap[jQuery(this).val()].id) {
+				jQuery(this).val("");
+				jQuery(this).attr("name", "-1");
+			}
+		} else {
+			if (jQuery(this).attr("name") != "-1") {
+				ssiptv.site.getChannelTitle(jQuery(this).attr("name"), function(event) {jQuery("#inputStandardizedName").val(event.title);});
+			} else jQuery(this).val("");
+		}
+	});
+	
+	// Нажатие кнопки на автокомплите
+	jQuery("#inputStandardizedName").on("keydown", function(event) {
+		if (event.keyCode == 13) {
+			if (jQuery(this).next().css("display") != "block") {
+				btnApplyChangesHandler();
+			}
+		}
+	});
+	jQuery(".modal-input").on("keydown", function(event) {
+		if (event.keyCode == 13) {
+			btnApplyChangesHandler();
+		}
+	});
+	
+	jQuery('a[data-toggle="tab"]').on('shown', function (e) {
+		contentType = e.target.name;
+		switch (contentType) {
+			case 'content://videos':
+				// Спрятать
+				jQuery("#inputShift").parent().css("display", "none");
+				jQuery("#inputShift").parent().prev().css("display", "none");
+				jQuery("#inputStandardizedName").parent().parent().css("display", "none");
+				jQuery("#inputStandardizedName").parent().parent().prev().css("display", "none");
+				jQuery("#inputEPGCounty").parent().css("display", "none");
+				jQuery("#inputEPGCounty").parent().prev().css("display", "none");
+				jQuery("#selectCatchup").parent().css("display", "none");
+				jQuery("#selectCatchup").parent().prev().css("display", "none");
+				jQuery("#inputCatchupDays").parent().css("display", "none");
+				jQuery("#inputCatchupDays").parent().prev().css("display", "none");
+
+				
+				// Показать
+				jQuery("#inputStreamURL").parent().css("display", "block");
+				jQuery("#inputStreamURL").parent().prev().css("display", "block");
+				jQuery("#inputGroup").parent().css("display", "block");
+				jQuery("#inputGroup").parent().prev().css("display", "block");
+				jQuery("#inputAudio").parent().css("display", "block");
+				jQuery("#inputAudio").parent().prev().css("display", "block");
+				jQuery("#inputSubtitles").parent().css("display", "block");
+				jQuery("#inputSubtitles").parent().prev().css("display", "block");
+				jQuery("#groupRadioAspectRatio").css("display", "block");
+				jQuery("#groupRadioAspectRatio").prev().css("display", "block");
+				jQuery("#groupRadioSize").css("display", "block");
+				jQuery("#groupRadioSize").prev().css("display", "block");
+				jQuery("#btnOpen").css("display", "");
+				jQuery("#btnAddPlaylistItem").css("display", "");
+				jQuery("#btnDownload").css("visibility", "visible");
+				jQuery("#btnClear").css("display", "");
+				break;
+			case 'content://playlists':
+				// Показать
+				jQuery("#inputStreamURL").parent().css("display", "block");
+				jQuery("#inputStreamURL").parent().prev().css("display", "block");
+				jQuery("#btnAddPlaylistItem").css("display", "");
+				jQuery("#btnClear").css("display", "");				
+				jQuery("#selectCatchup").parent().css("display", "block");
+				jQuery("#selectCatchup").parent().prev().css("display", "block");
+				jQuery("#inputCatchupDays").parent().css("display", "block");
+				jQuery("#inputCatchupDays").parent().prev().css("display", "block");
+
+				
+				// Спрятать
+				jQuery("#inputGroup").parent().css("display", "none");
+				jQuery("#inputGroup").parent().prev().css("display", "none");
+				jQuery("#inputShift").parent().css("display", "none");
+				jQuery("#inputShift").parent().prev().css("display", "none");
+				jQuery("#inputStandardizedName").parent().parent().css("display", "none");
+				jQuery("#inputStandardizedName").parent().parent().prev().css("display", "none");
+				jQuery("#inputAudio").parent().css("display", "none");
+				jQuery("#inputAudio").parent().prev().css("display", "none");
+				jQuery("#inputSubtitles").parent().css("display", "none");
+				jQuery("#inputSubtitles").parent().prev().css("display", "none");
+				jQuery("#groupRadioAspectRatio").css("display", "none");
+				jQuery("#groupRadioAspectRatio").prev().css("display", "none");
+				jQuery("#groupRadioSize").css("display", "none");
+				jQuery("#groupRadioSize").prev().css("display", "none");
+				jQuery("#inputEPGCounty").parent().css("display", "none");
+				jQuery("#inputEPGCounty").parent().prev().css("display", "none");
+				jQuery("#btnOpen").css("display", "none");
+				jQuery("#btnDownload").css("visibility", "hidden");
+				break;
+			case 'content://broadcast':
+				// Показать
+				jQuery("#inputShift").parent().css("display", "block");
+				jQuery("#inputShift").parent().prev().css("display", "block");
+				jQuery("#inputGroup").parent().css("display", "block");
+				jQuery("#inputGroup").parent().prev().css("display", "block");
+				jQuery("#inputStandardizedName").parent().parent().css("display", "block");
+				jQuery("#inputStandardizedName").parent().parent().prev().css("display", "block");
+				jQuery("#groupRadioAspectRatio").css("display", "block");
+				jQuery("#groupRadioAspectRatio").prev().css("display", "block");
+				jQuery("#groupRadioSize").css("display", "block");
+				jQuery("#groupRadioSize").prev().css("display", "block");
+				jQuery("#inputEPGCounty").parent().css("display", "block");
+				jQuery("#inputEPGCounty").parent().prev().css("display", "block");
+				
+				// Спрятать
+				jQuery("#inputDescription").parent().css("display", "none");
+				jQuery("#inputDescription").parent().prev().css("display", "none");
+				jQuery("#inputStreamURL").parent().css("display", "none");
+				jQuery("#inputStreamURL").parent().prev().css("display", "none");
+				jQuery("#inputAudio").parent().css("display", "none");
+				jQuery("#inputAudio").parent().prev().css("display", "none");
+				jQuery("#inputSubtitles").parent().css("display", "none");
+				jQuery("#inputSubtitles").parent().prev().css("display", "none");
+				jQuery("#btnOpen").css("display", "none");
+				jQuery("#btnAddPlaylistItem").css("display", "none");
+				jQuery("#btnDownload").css("visibility", "hidden");
+				jQuery("#btnClear").css("display", "none");
+				jQuery("#selectCatchup").parent().css("display", "none");
+				jQuery("#selectCatchup").parent().prev().css("display", "none");
+				jQuery("#inputCatchupDays").parent().css("display", "none");
+				jQuery("#inputCatchupDays").parent().prev().css("display", "none");
+
+				break;
+			default:
+				// Показать
+				jQuery("#inputGroup").parent().css("display", "block");
+				jQuery("#inputGroup").parent().prev().css("display", "block");
+				jQuery("#inputStreamURL").parent().css("display", "block");
+				jQuery("#inputStreamURL").parent().prev().css("display", "block");
+				jQuery("#inputShift").parent().css("display", "block");
+				jQuery("#inputShift").parent().prev().css("display", "block");
+				jQuery("#inputStandardizedName").parent().parent().css("display", "block");
+				jQuery("#inputStandardizedName").parent().parent().prev().css("display", "block");
+				jQuery("#inputAudio").parent().css("display", "block");
+				jQuery("#inputAudio").parent().prev().css("display", "block");
+				jQuery("#inputSubtitles").parent().css("display", "block");
+				jQuery("#inputSubtitles").parent().prev().css("display", "block");
+				jQuery("#inputEPGCounty").parent().css("display", "block");
+				jQuery("#inputEPGCounty").parent().prev().css("display", "block");
+				jQuery("#groupRadioAspectRatio").css("display", "block");
+				jQuery("#groupRadioAspectRatio").prev().css("display", "block");
+				jQuery("#groupRadioSize").css("display", "block");
+				jQuery("#groupRadioSize").prev().css("display", "block");
+				jQuery("#btnOpen").css("display", "");
+				jQuery("#btnAddPlaylistItem").css("display", "");
+				jQuery("#btnDownload").css("visibility", "visible");
+				jQuery("#btnClear").css("display", "");
+				
+				// Спрятать
+				jQuery("#inputDescription").parent().css("display", "none");
+				jQuery("#inputDescription").parent().prev().css("display", "none");
+				jQuery("#selectCatchup").parent().css("display", "none");
+				jQuery("#selectCatchup").parent().prev().css("display", "none");
+				jQuery("#inputCatchupDays").parent().css("display", "none");
+				jQuery("#inputCatchupDays").parent().prev().css("display", "none");
+
+		}
+		
+		if (contentType == "content://favorites") jQuery("#btnOpen").css("display", "none");
+
+		ssiptv.bridge.getCurrent(function(e) {
+			jQuery.blockUI({message: translations.MESSAGE_PLEASE_WAIT});
+			ssiptv.bridge.getContent(e.id, [contentType], function (e) {updateTable(e.list[0].list);});            
+		});
+	
+	});
+});
+	
